@@ -30,6 +30,8 @@ for (const [format, title] of ENDPOINTS) {
 }
 
 const DEFAULT_MESSAGE = "This model is not available on this endpoint";
+const MIN_PRIORITY = -2147483648;
+const MAX_PRIORITY = 2147483647;
 
 export const meta = {
     apiVersion: 1,
@@ -39,7 +41,7 @@ export const meta = {
         en: "Limits which endpoint types a model can use, matched by exact name, keyword or regular expression",
         zh: "按模型名称精确、关键词或正则匹配，限制模型可使用的端点类型",
     },
-    version: "1.0.1",
+    version: "1.1.0",
     author: { name: "多栈科技" },
     website: "https://ais.6os.net/",
     configSchema: {
@@ -49,8 +51,8 @@ export const meta = {
                 type: "array",
                 title: { en: "Rules", zh: "规则" },
                 description: {
-                    en: "Checked in order; the first rule matching the request model decides. Models without a matching rule are allowed",
-                    zh: "按顺序检查，第一条匹配请求模型的规则生效；没有匹配规则的模型默认放行",
+                    en: "Checked by priority, then in list order; the first rule matching the request model decides. Models without a matching rule are allowed",
+                    zh: "按优先级检查，优先级相同时按列表顺序；第一条匹配请求模型的规则生效；没有匹配规则的模型默认放行",
                 },
                 default: [],
                 maxItems: 100,
@@ -88,6 +90,17 @@ export const meta = {
                             minLength: 1,
                             maxLength: 1024,
                             examples: ["claude-sonnet-4", "^claude-.*"],
+                        },
+                        priority: {
+                            type: "integer",
+                            title: { en: "Priority", zh: "优先级" },
+                            description: {
+                                en: "Higher values are checked first; rules with the same priority keep their list order",
+                                zh: "数值越大越先检查；优先级相同的规则按列表顺序检查",
+                            },
+                            default: 0,
+                            minimum: MIN_PRIORITY,
+                            maximum: MAX_PRIORITY,
                         },
                         openai: {
                             type: "boolean",
@@ -171,8 +184,8 @@ export const meta = {
                             type: "string",
                             title: { en: "Rule ID", zh: "规则 ID" },
                             description: {
-                                en: "Recorded when the rule rejects a request; leave empty to number rules in order",
-                                zh: "拒绝请求时记录，留空时按顺序编号",
+                                en: "Recorded when the rule rejects a request; leave empty to number rules by list position",
+                                zh: "拒绝请求时记录，留空时按列表位置编号",
                             },
                             maxLength: 64,
                             examples: ["claude-chat-disabled"],
@@ -243,6 +256,15 @@ function compileModelPattern(rule, ruleId) {
     }
 }
 
+function rulePriority(rule, ruleId) {
+    if (rule.priority === undefined || rule.priority === null) return 0;
+    const priority = rule.priority;
+    if (!Number.isInteger(priority) || priority < MIN_PRIORITY || priority > MAX_PRIORITY) {
+        throw new Error('Rule "' + ruleId + '" has an invalid priority');
+    }
+    return priority;
+}
+
 function compileRules(config) {
     const rules = config.rules || [];
     const compiled = [];
@@ -259,10 +281,13 @@ function compileRules(config) {
             : ENDPOINT_FORMATS.filter((endpoint) => rule[endpoint] === true);
         compiled.push({
             id: ruleId,
+            priority: rulePriority(rule, ruleId),
+            order: i,
             matcher: compileModelPattern(rule, ruleId),
             endpoints: endpoints,
         });
     }
+    compiled.sort((a, b) => b.priority - a.priority || a.order - b.order);
     return compiled;
 }
 

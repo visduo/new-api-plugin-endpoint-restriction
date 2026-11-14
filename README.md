@@ -27,10 +27,11 @@ Each rule contains:
 | --- | --- |
 | **Model match type** | `Exact` compares the whole model name, `Keyword` matches any part of it, and `Regular expression` treats the value as a JavaScript regular expression. |
 | **Model name or expression** | A model name, a keyword, or a full regular expression without slashes, such as `^claude-.*`. |
+| **Priority** | Rules with a higher value are checked first. Rules with the same priority keep their list order. The default is `0`. |
 | **Allowed endpoints** | The endpoint types the matched model may use. An endpoint that is not selected is rejected. |
-| **Rule ID** | An optional name for the rule. It appears in the rejection log; when empty, the gateway numbers the rule by its position as `rule-1`, `rule-2`, and so on. |
+| **Rule ID** | An optional name for the rule. It appears in the rejection log; when empty, the gateway numbers the rule by its list position as `rule-1`, `rule-2`, and so on. |
 
-Rules are checked from top to bottom. The first rule whose model matcher matches decides the request, even when it allows the endpoint. Later rules are not checked. A model that matches no rule is allowed.
+Rules are checked from the highest priority to the lowest, and from top to bottom among rules with the same priority. The first rule whose model matcher matches decides the request, even when it allows the endpoint. Later rules are not checked. A model that matches no rule is allowed.
 
 Select at least one allowed endpoint for a rule that should restrict a model. A matched rule with no selected endpoints rejects every endpoint for that model.
 
@@ -87,6 +88,7 @@ Allow the `claude-*` models only on the Responses endpoint, and reject every oth
       "id": "claude-responses-only",
       "modelType": "regex",
       "model": "^claude-.*",
+      "priority": 10,
       "openai": false,
       "openai_responses": true
     }
@@ -119,6 +121,7 @@ The response has HTTP status 400 and error code `request_rejected`, with the con
 
 - An instance holds at most 100 rules.
 - A model matcher is 1 to 1024 characters. A rule ID is at most 64 characters. The rejection message is at most 256 characters.
+- A priority is an integer from -2147483648 to 2147483647.
 - A rule can allow any combination of the listed endpoint types.
 - The plugin checks ordinary API requests and task submissions, but not task polling, artifact downloads, or replies that are already in progress.
 - A request whose body cannot be read at `ingress` does not run the plugin. A request with no non-empty model is allowed.
