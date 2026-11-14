@@ -99,8 +99,8 @@ export const meta = {
                                 zh: "数值越大越先检查；优先级相同的规则按列表顺序检查",
                             },
                             default: 0,
-                            minimum: MIN_PRIORITY,
-                            maximum: MAX_PRIORITY,
+                            minimum: -2147483648,
+                            maximum: 2147483647,
                         },
                         openai: {
                             type: "boolean",
