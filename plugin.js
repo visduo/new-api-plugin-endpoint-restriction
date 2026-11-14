@@ -39,7 +39,7 @@ export const meta = {
         en: "Limits which endpoint types a model can use, matched by exact name, keyword or regular expression",
         zh: "按模型名称精确、关键词或正则匹配，限制模型可使用的端点类型",
     },
-    version: "1.0.0",
+    version: "1.0.1",
     author: { name: "多栈科技" },
     website: "https://ais.6os.net/",
     configSchema: {
