@@ -33,7 +33,7 @@ const DEFAULT_MESSAGE = "This model is not available on this endpoint";
 
 export const meta = {
     apiVersion: 1,
-    key: "visduo_endpoint_restriction",
+    key: "visduo_endpoint-restriction",
     name: { en: "Endpoint restriction", zh: "端点限制" },
     description: {
         en: "Limits which endpoint types a model can use, matched by exact name, keyword or regular expression",
