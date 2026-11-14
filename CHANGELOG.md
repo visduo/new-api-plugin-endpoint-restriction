@@ -1,6 +1,6 @@
 ---
 changelogVersion: 1
-plugin: "visduo_endpoint_restriction"
+plugin: "visduo_endpoint-restriction"
 version: "1.0.0"
 locale: "en"
 translations:
