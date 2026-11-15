@@ -1,15 +1,15 @@
 ---
 changelogVersion: 1
 plugin: "visduo_endpoint-restriction"
-version: "1.1.0"
+version: "1.2.0"
 locale: "en"
 translations:
   zh-CN: CHANGELOG.zh-CN.md
 ---
 # Changelog
 
-## [1.1.0]
+## [1.2.0]
 
-### Added
+### Changed
 
-- Rules can set a priority to decide which matching rule applies. Higher values are checked first; rules with the same priority keep their list order.
+- Use `https://www.6os.net/` as the plugin website.
